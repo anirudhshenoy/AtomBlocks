@@ -35,6 +35,15 @@ var app = {
             Atom.connectAtom,
             Atom.notEnabled
         );
+        generateCodeAndLoadIntoInterpreter();
+        workspacePlayground.addChangeListener(function(event) {
+          if (!(event instanceof Blockly.Events.Ui)) {
+            // Something changed. Parser needs to be reloaded.
+            resetInterpreter();
+            generateCodeAndLoadIntoInterpreter();
+            }
+        });
+
         
     },
 
@@ -45,21 +54,30 @@ var app = {
 };
 
 var Atom = Atom || {};
+var toasted = new Toasted({
+    position : 'bottom-left',
+    theme : 'alive',
+    duration: 1000,
+});
+var myInterpreter=null;
+var latestCode='';
+var runner;
+var highlightPause = false;
 
 
 Atom.connectAtom = function() {
-    M.toast({html: 'Connecting...'});
+    toasted.show('Connecting...');
     macAddress= "00:18:E4:00:63:FB";
     bluetoothSerial.connect(macAddress,Atom.onConnect,Atom.connectError);
 }
 
 Atom.onConnect = function(){
-    M.toast({html: 'Connected WOHO!'});
+    toasted.show('Connected WOHO!');
 
 }
 
 Atom.connectError = function(){
-    M.toast({html: 'Not Connected :('});
+    toasted.show('Not Connected :(');
 }
 Atom.notEnabled = function() {
             alert("Bluetooth is not enabled.")
@@ -70,18 +88,14 @@ Atom.connectBoard = function() {
 }
 Atom.init = function() {
     Atom.bindFunctions();
+    
 }
 
 Atom.exportCode = function() {
 
-    var code = Blockly.JavaScript.workspaceToCode(workspacePlayground);
-    M.toast({html: code});
-    try {
-	  eval(code);
-	} catch (e) {
-	  alert(e);
-	}
-
+    
+    runCode();
+    
 
 }
 
@@ -103,4 +117,69 @@ Atom.bindClick_ = function(el, func) {
   };
   el.addEventListener('ontouchend', propagateOnce);
   el.addEventListener('click', propagateOnce);
-};
+}
+
+function highlightBlock(id) {
+      workspacePlayground.highlightBlock(id);
+      highlightPause = true;
+}
+
+function resetStepUi(clearOutput) {
+  workspacePlayground.highlightBlock(null);
+  highlightPause = false;
+}
+
+
+function generateCodeAndLoadIntoInterpreter() {
+  // Generate JavaScript code and parse it.
+  Blockly.JavaScript.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
+  Blockly.JavaScript.addReservedWords('highlightBlock');
+  latestCode = Blockly.JavaScript.workspaceToCode(workspacePlayground);
+  toasted.show(latestCode);
+  resetStepUi(true);
+}
+
+
+function resetInterpreter() {
+    myInterpreter = null;
+    if (runner) {
+    clearTimeout(runner);
+    runner = null;
+    }
+}
+
+
+function runCode() {
+  if (!myInterpreter) {
+    // First statement of this code.
+    // Clear the program output.
+    resetStepUi(true);
+    //runButton.disabled = 'disabled';
+
+    // And then show generated code in an alert.
+    // In a timeout to allow the outputArea.value to reset first.
+    setTimeout(function() {
+      
+      // Begin execution
+      highlightPause = false;
+      myInterpreter = new Interpreter(latestCode, initApi);
+      runner = function() {
+        if (myInterpreter) {
+          var hasMore = myInterpreter.run();
+          if (hasMore) {
+            // Execution is currently blocked by some async call.
+            // Try again later.
+            setTimeout(runner, 10);
+          } else {
+            // Program is complete.
+            
+            resetInterpreter();
+            //resetStepUi(false);
+          }
+        }
+      };
+      runner();
+    }, 1);
+    return;
+  }
+}

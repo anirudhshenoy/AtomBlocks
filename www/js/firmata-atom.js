@@ -38,4 +38,39 @@ class firmataBoard{
   writeDigitalPort(port) {
       bluetoothSerial.write([(0x90 | port), (this.ports[port] & 0x7F), ((this.ports[port] >> 7) & 0x7F)]);
 	}
+
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
 }
+
+function initApi(interpreter, scope) {
+  
+  // add
+  var wrapper = function (pin, value) {
+    let fBoard= new firmataBoard();
+    fBoard.digitalWrite(pin, value);
+  }
+
+  interpreter.setProperty(scope,'digitalWrite', interpreter.createNativeFunction(wrapper));
+
+  Blockly.JavaScript.addReservedWords('waitForSeconds');
+  var wrapper = interpreter.createAsyncFunction(
+    function(timeInSeconds, callback) {
+      // Delay the call to the callback.
+      setTimeout(callback, timeInSeconds * 1000);
+    });
+  interpreter.setProperty(scope, 'waitForSeconds', wrapper);
+
+     // Add an API function for highlighting blocks.
+  wrapper = function(id) {
+        id = id ? id.toString() : '';
+        return interpreter.createPrimitive(highlightBlock(id));
+  };      
+  interpreter.setProperty(scope, 'highlightBlock',
+          interpreter.createNativeFunction(wrapper));
+}
+  
+
+ 

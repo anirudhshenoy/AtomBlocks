@@ -6,9 +6,12 @@ BLOCKLY_TOOLBOX_XML['standard'] =
 // From XML string/file, replace ^\s?(\s*)?(<.*>)$ with \+$1'$2'
 // Tweak first and last line.
 '<xml>'
-+ '<category name="Logic" colour="%{BKY_LOGIC_HUE}">'
-+   '<block type="controls_if"></block>'
++ '<category name="OUTPUT" colour="#4C97FF">'
 +   '<block type="digital_write"></block>'
++ '</category>'
++ '<category name="Logic" colour="%{BKY_LOGIC_HUE}">'
++   '<block type="wait"></block>'
++   '<block type="controls_if"></block>'
 +   '<block type="logic_compare"></block>'
 +   '<block type="logic_operation"></block>'
 +   '<block type="logic_negate"></block>'
@@ -16,7 +19,7 @@ BLOCKLY_TOOLBOX_XML['standard'] =
 +   '<block type="logic_null" disabled="true"></block>'
 +   '<block type="logic_ternary"></block>'
 + '</category>'
-+ '<category name="Loops" colour="%{BKY_LOOPS_HUE}">'
++ '<category name="CONTROL" colour="#ffab19">'
 +   '<block type="controls_repeat_ext">'
 +     '<value name="TIMES">'
 +       '<shadow type="math_number">'
@@ -327,8 +330,5 @@ BLOCKLY_TOOLBOX_XML['standard'] =
 +     '</value>'
 +   '</block>'
 + '</category>'
-+ '<sep></sep>'
-+ '<category name="Variables" colour="%{BKY_VARIABLES_HUE}" custom="VARIABLE"></category>'
-+ '<category name="Functions" colour="%{BKY_PROCEDURES_HUE}" custom="PROCEDURE"></category>'
 + '</xml>';
 /* END BLOCKLY_TOOLBOX_XML ASSIGNMENT. DO NOT EDIT. */

@@ -1,0 +1,26 @@
+
+#ide_buttons_wrapper {
+  position: absolute;
+  right: 25px;
+  top: 20px;
+  height: 55px;
+  width: 160px;
+  z-index: 12;
+}
+.container{
+    width: 100%;
+    max-width:initial;
+    > .row{
+        margin: 0;
+        > .col{
+            padding: 0;
+        }
+    }
+}
+.app {   
+height: 100%;
+width: calc(100% - 20px);
+position: fixed;
+text-align:center;
+padding: 0px 0px;
+}

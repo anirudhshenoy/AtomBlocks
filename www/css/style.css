@@ -24,3 +24,83 @@ position: fixed;
 text-align:center;
 padding: 0px 0px;
 }
+
+html, body {
+  height: 100%;
+}
+body {
+  background-color: #fff;
+  font-family: sans-serif;
+  overflow: hidden;
+}
+h1 {
+  font-weight: normal;
+  font-size: 140%;
+}
+#importExport {
+  font-family: monospace;
+}
+
+.ioLabel>.blocklyFlyoutLabelText {
+  font-style: italic;
+}
+
+.blocklyFlyoutLabelText {
+  fill: white !important;
+}
+.blocklyFlyoutHeading>.blocklyFlyoutLabelText {
+  font-size: 1.5rem;
+}
+line.blocklyFlyoutLine {
+  stroke: white;
+}
+.blocklyFlyoutLabelIcon {
+  font-family: 'Font Awesome\ 5 Free';
+  font-size: 1.5rem;
+  font-weight: 900;
+  fill: white;
+}
+
+.blocklyTreeRow {
+  height: 45px !important;
+}
+
+.blocklyTreeIconCustom {
+  background: none !important;
+  font-family: 'Font Awesome\ 5 Free';
+  font-weight: 900;
+  font-size: 1.3rem;
+  margin: 0 .25em;
+  width: 30px !important;
+  height: 100% !important;
+  line-height: 45px;
+  min-height: 45px;
+  vertical-align: middle;
+}
+.blocklyTreeIconCustom::before {
+  content: "\f12e";
+}
+.blocklyTreeIconCustom.logic::before {
+  content: "\f074";
+}
+.blocklyTreeIconCustom.loops::before {
+  content: "\f01e";
+}
+.blocklyTreeIconCustom.math::before {
+  content: "\f1ec";
+}
+.blocklyTreeIconCustom.text::before {
+  content: "\f031";
+}
+.blocklyTreeIconCustom.lists::before {
+  content: "\f0ca";
+}
+.blocklyTreeIconCustom.colour::before {
+  content: "\f53f";
+}
+.blocklyTreeIconCustom.variables::before {
+  content: "\f0c9";
+}
+.blocklyTreeIconCustom.functions::before {
+  content: "\f141";
+}

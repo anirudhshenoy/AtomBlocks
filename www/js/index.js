@@ -19,8 +19,7 @@
 var app = {
     // Application Constructor
     initialize: function() {
-        document.addEventListener('deviceready', this.onDeviceReady.bind(this), false);
-        
+        document.addEventListener('deviceready', this.onDeviceReady.bind(this), false); 
     },
 
     // deviceready Event Handler
@@ -63,6 +62,7 @@ var myInterpreter=null;
 var latestCode='';
 var runner;
 var highlightPause = false;
+var workspacePlayground=null;
 
 
 Atom.connectAtom = function() {
@@ -87,13 +87,28 @@ Atom.connectBoard = function() {
     
 }
 Atom.init = function() {
+  var toolbox = document.getElementById('toolbox-categories');
+  workspacePlayground = Blockly.inject('blocks_panel',
+  {
+    disable: true,
+    media: 'js/blockly/media/',
+    scrollbars: false,
+    trashcan:false,
+    toolbox: toolbox,
+    toolboxPosition: 'start',
+    toolboxOptions:
+      {
+        color: true,
+        inverted: true
+      },
+  });
+
     Atom.bindFunctions();
     
 }
 
 Atom.exportCode = function() {
 
-    
     runCode();
     
 
@@ -135,7 +150,7 @@ function generateCodeAndLoadIntoInterpreter() {
   Blockly.JavaScript.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
   Blockly.JavaScript.addReservedWords('highlightBlock');
   latestCode = Blockly.JavaScript.workspaceToCode(workspacePlayground);
- // toasted.show(latestCode);
+  //toasted.show(latestCode);
   resetStepUi(true);
 }
 

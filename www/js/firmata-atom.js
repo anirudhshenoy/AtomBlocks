@@ -57,27 +57,29 @@ const SYSTEM_RESET = 0xFF;
 
 const MAX_PIN_COUNT = 128;
 
-const MODES = {
-  INPUT: 0x00,
-  OUTPUT: 0x01,
-  ANALOG: 0x02,
-  PWM: 0x03,
-  SERVO: 0x04,
-  SHIFT: 0x05,
-  I2C: 0x06,
-  ONEWIRE: 0x07,
-  STEPPER: 0x08,
-  SERIAL: 0x0A,
-  PULLUP: 0x0B,
-  IGNORE: 0x7F,
-  PING_READ: 0x75,
-  UNKOWN: 0x10,
-};
+
 
 class firmataBoard{
 
 	constructor (){
 	this.ports = new Array(16).fill(0);
+  this.MODES = {
+      INPUT: 0x00,
+      OUTPUT: 0x01,
+      ANALOG: 0x02,
+      PWM: 0x03,
+      SERVO: 0x04,
+      SHIFT: 0x05,
+      I2C: 0x06,
+      ONEWIRE: 0x07,
+      STEPPER: 0x08,
+      SERIAL: 0x0A,
+      PULLUP: 0x0B,
+      IGNORE: 0x7F,
+      PING_READ: 0x75,
+      UNKOWN: 0x10,
+    };
+
     }
 
   /**
@@ -114,13 +116,13 @@ class firmataBoard{
       bluetoothSerial.write([(DIGITAL_MESSAGE | port), (this.ports[port] & 0x7F), ((this.ports[port] >> 7) & 0x7F)]);
 	}
 
+
+
   /*
     * mode (INPUT/OUTPUT/ANALOG/PWM/SERVO/I2C/ONEWIRE/STEPPER/ENCODER/SERIAL/PULLUP, 0/1/2/3/4/6/7/8/9/10/11)
   */
-
-
   pinMode(pin, mode) {
-  bluetoothSerial.write([PIN_MODE, pin, mode]);
+    bluetoothSerial.write([PIN_MODE, pin, mode]);
   }
 
  /**
@@ -157,10 +159,13 @@ class firmataBoard{
     }
 
     bluetoothSerial.write(data);
-}
+    
+  }
 
 
 }
+
+
 
 function initApi(interpreter, scope) {
 
@@ -168,30 +173,23 @@ function initApi(interpreter, scope) {
   // Add API function for digitalWrite
   var wrapper = function (pin, value) {
     let fBoard= new firmataBoard();
+    fBoard.pinMode(pin,fBoard.MODES.PWM);
     fBoard.pwmWrite(pin, value);
   }
 
-  interpreter.setProperty(scope,'pwmWrite', interpreter.createNativeFunction(wrapper));
+  interpreter.setProperty(scope,'analogWrite', interpreter.createNativeFunction(wrapper));
   
   Blockly.JavaScript.addReservedWords('digitalWrite');
   // Add API function for digitalWrite
   var wrapper = function (pin, value) {
     let fBoard= new firmataBoard();
+    fBoard.pinMode(pin,fBoard.MODES.OUTPUT);
     fBoard.digitalWrite(pin, value);
   }
 
   interpreter.setProperty(scope,'digitalWrite', interpreter.createNativeFunction(wrapper));
 
-  Blockly.JavaScript.addReservedWords('pinMode');
-  //Add API function for PinMode
-  var wrapper = function (pin, mode) {
-  let fBoard= new firmataBoard();
-  fBoard.pinMode(pin, value);
-  }
-
-  interpreter.setProperty(scope,'pinMode', interpreter.createNativeFunction(wrapper));
-
-
+ 
   Blockly.JavaScript.addReservedWords('waitForSeconds');
   var wrapper = interpreter.createAsyncFunction(
     function(timeInSeconds, callback) {

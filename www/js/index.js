@@ -135,7 +135,7 @@ function generateCodeAndLoadIntoInterpreter() {
   Blockly.JavaScript.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
   Blockly.JavaScript.addReservedWords('highlightBlock');
   latestCode = Blockly.JavaScript.workspaceToCode(workspacePlayground);
-  toasted.show(latestCode);
+ // toasted.show(latestCode);
   resetStepUi(true);
 }
 

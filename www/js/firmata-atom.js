@@ -90,8 +90,8 @@ class firmataBoard{
    */
 
 	digitalWrite(pin, value) {
-        let port = this.updateDigitalPort(pin, value);
-        this.writeDigitalPort(port);
+      let port = this.updateDigitalPort(pin, value);
+      this.writeDigitalPort(port);
     }
 
   updateDigitalPort(pin, value) {
@@ -172,7 +172,6 @@ function initApi(interpreter, scope) {
   Blockly.JavaScript.addReservedWords('analogWrite');
   // Add API function for digitalWrite
   var wrapper = function (pin, value) {
-    let fBoard= new firmataBoard();
     fBoard.pinMode(pin,fBoard.MODES.PWM);
     fBoard.pwmWrite(pin, value);
   }
@@ -182,7 +181,6 @@ function initApi(interpreter, scope) {
   Blockly.JavaScript.addReservedWords('digitalWrite');
   // Add API function for digitalWrite
   var wrapper = function (pin, value) {
-    let fBoard= new firmataBoard();
     fBoard.pinMode(pin,fBoard.MODES.OUTPUT);
     fBoard.digitalWrite(pin, value);
   }

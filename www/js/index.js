@@ -16,6 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+var Atom = Atom || {};
+var toasted = new Toasted({
+    position : 'bottom-left',
+    theme : 'alive',
+    duration: 1000,
+});
+var myInterpreter=null;
+var latestCode='';
+var runner;
+var highlightPause = false;
+var workspacePlayground=null;
+var fboard;
+var attachFastClick;
+
 var app = {
     // Application Constructor
     initialize: function() {
@@ -31,9 +46,10 @@ var app = {
         Atom.init();
         
         bluetoothSerial.isEnabled(
-            Atom.connectAtom,
+            function(){},
             Atom.notEnabled
         );
+        /*
         generateCodeAndLoadIntoInterpreter();
         workspacePlayground.addChangeListener(function(event) {
           if (!(event instanceof Blockly.Events.Ui)) {
@@ -42,7 +58,7 @@ var app = {
             generateCodeAndLoadIntoInterpreter();
             }
         });
-
+        */
         
     },
 
@@ -52,17 +68,7 @@ var app = {
     }
 };
 
-var Atom = Atom || {};
-var toasted = new Toasted({
-    position : 'bottom-left',
-    theme : 'alive',
-    duration: 1000,
-});
-var myInterpreter=null;
-var latestCode='';
-var runner;
-var highlightPause = false;
-var workspacePlayground=null;
+
 
 
 Atom.connectAtom = function() {
@@ -72,21 +78,25 @@ Atom.connectAtom = function() {
 }
 
 Atom.onConnect = function(){
-    toasted.show('Connected WOHO!');
-
+    $("button_connect").removeClass("connect-button-not-connected");
+    $("button_connect").removeClass("pulse");
+    $("button_connect").addClass("connect-button-connected");
 }
 
 Atom.connectError = function(){
     toasted.show('Not Connected :(');
 }
 Atom.notEnabled = function() {
-            alert("Bluetooth is not enabled.")
+            alert("Please Enable Bluetooth to connect to Atom!")
         }
 
 Atom.connectBoard = function() {
     
 }
-Atom.init = function() {
+Atom.init = function() 
+{ 
+  attachFastClick = Origami.fastclick;
+  attachFastClick(document.body);
   var toolbox = document.getElementById('toolbox-categories');
   workspacePlayground = Blockly.inject('blocks_panel',
   {
@@ -101,6 +111,11 @@ Atom.init = function() {
         color: true,
         inverted: true
       },
+    zoom:
+         {
+          startScale: 0.7
+          }
+
   });
 
     Atom.bindFunctions();
@@ -117,6 +132,8 @@ Atom.exportCode = function() {
 Atom.bindFunctions = function() {
      Atom.bindClick_('button_ide_large', function() {
         Atom.exportCode();});
+     Atom.bindClick_('button_connect', function() {
+        Atom.connectAtom();});
 }
 
 
@@ -165,6 +182,9 @@ function resetInterpreter() {
 
 
 function runCode() {
+  resetInterpreter();
+  generateCodeAndLoadIntoInterpreter();
+  fBoard= new firmataBoard();
   if (!myInterpreter) {
     // First statement of this code.
     // Clear the program output.

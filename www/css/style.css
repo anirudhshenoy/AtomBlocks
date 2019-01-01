@@ -1,13 +1,36 @@
-
 #ide_buttons_wrapper {
   position: absolute;
-  right: 25px;
+  right: 0px;
   top: 20px;
   height: 55px;
   width: 160px;
   z-index: 12;
 }
-.container{
+
+#connect_buttons_wrapper {
+  position: absolute;
+  right: 0px;
+  top: 100px;
+  height: 55px;
+  width: 160px;
+  z-index: 12;
+}
+
+.connect-button-not-connected{
+  background-color: red;
+}
+
+.connect-button-connected{
+  background-color: green;
+}
+
+
+.run-button{
+  background-color: #FF8C1A;
+}
+
+
+.container {
     width: 100%;
     max-width:initial;
     > .row{
@@ -17,6 +40,7 @@
         }
     }
 }
+
 .app {   
 height: 100%;
 width: calc(100% - 20px);
@@ -25,10 +49,18 @@ text-align:center;
 padding: 0px 0px;
 }
 
-html, body {
-  height: 100%;
+html{
+   height: 100%;
+  -webkit-touch-callout: none;                /* Prevent callout to copy image, etc. when tap to hold */
+  -webkit-text-size-adjust: none;             /* Prevent webkit from resizing text to fit */
+  -webkit-tap-highlight-color: rgba(0,0,0,0); /* Prevent tap highlight color/shadow */
+  -webkit-user-select: none;                  /* No element selection */
+  cursor: default;                            /* Default cursor */
+  touch-action: manipulation;                 /* Disable double tap to zoom */
+  
 }
 body {
+  height: 100%;
   background-color: #fff;
   font-family: sans-serif;
   overflow: hidden;

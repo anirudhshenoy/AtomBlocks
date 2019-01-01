@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8"/>
         <meta name="msapplication-tap-highlight" content="no">
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height">
 
         <script type="text/javascript" src="js/blockly/blockly_compressed.js"></script>
         <script type="text/javascript" src="js/blockly/blocks_compressed.js"></script>
@@ -26,6 +26,7 @@
         <!--script src="js/blockly/toolbox_standard.js"></script-->
         <script src="js/acorn.js"></script>
         <script src="js/interpreter.js"></script>
+        <script src="js/fastclick.min.js"></script>
 
 
 
@@ -36,8 +37,10 @@
                 <div class="row">
                     <div class="col s12 m12" style="position:relative">
                         <div id="ide_buttons_wrapper">
-                            <a id="button_ide_large" class="waves-effect waves-light waves-circle btn-floating z-depth-1-half red"><i class="material-icons">play_circle_outline</i></a>
-                        
+                            <a id="button_ide_large" class="btn-floating btn-large waves-light run-button"><i class="material-icons">play_circle_outline</i></a>
+                         </div>
+                         <div id="connect_buttons_wrapper">
+                            <a id="button_connect" class="btn-floating btn-large connect-button-not-connected waves-light pulse"><i class="material-icons">bluetooth_audio</i></a>
                          </div>
                          <div class="blocklyDiv white" style="padding: 0">
                             <div id="blocks_panel" class="content blocks_panel_large">
@@ -46,20 +49,20 @@
                         </div>
                     </div>  
                 </div>
-            </div>
-                        
-                   
-            
+            </div>  
         </div>
-
-        
-
-  </body>
-<xml id="toolbox-categories" style="display: none">
-    <category name="Logic" colour="#4C97FF" iconclass="blocklyTreeIconCustom loops">
+    </body>
+  <xml id="toolbox-categories" style="display: none">
+    <category name="Logic" colour="210" iconclass="blocklyTreeIconCustom loops">
       <label text="Logic" web-icon="" web-class="blocklyFlyoutHeading"></label>
       <block type="LED_write"></block>
-      <block type="LED_level"></block>
+      <block type="LED_level">
+        <value name="LEVEL">
+          <shadow type="math_number_minmax">
+             <mutation min="0" max="255"></mutation>
+          </shadow>
+        </value>
+      </block>
       <block type="controls_if">
         <value name="IF0">
           <shadow type="logic_boolean">
@@ -101,7 +104,13 @@
           </shadow>
         </value>
       </block>
-      <block type="pause"></block>
+      <block type="pause">
+        <value name="TIME">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+      </block>
       <block type="controls_whileUntil"></block>
       <label text="Advanced" web-line="1.0"></label>
       <block type="controls_for">

@@ -18,7 +18,11 @@
  */
 
 var Atom = Atom || {};
-var toasted;
+var toasted = new Toasted({
+    position : 'bottom-left',
+    theme : 'alive',
+    duration: 1000,
+});
 var myInterpreter=null;
 var latestCode='';
 var runner;
@@ -26,36 +30,20 @@ var highlightPause = false;
 var workspacePlayground=null;
 var fboard;
 var attachFastClick;
+var slideout;
 
 var app = {
     // Application Constructor
     initialize: function() {
-        document.addEventListener('deviceready', this.onDeviceReady.bind(this), false); 
-        document.addEventListener('DOMContentLoaded', function() {
-        var elems = document.querySelectorAll('.sidenav');
-        var instances = M.Sidenav.init(elems, {edge:'right',onOpenEnd:Atom.connectAtom});
-        });
-    },
-
-    // deviceready Event Handler
-    //
-    // Bind any cordova events here. Common events are:
-    // 'pause', 'resume', etc.
-    onDeviceReady: function() {
         screen.orientation.lock('landscape');
         Atom.init();
         
         bluetoothSerial.isEnabled(
-            function(){},
+            Atom.connectAtom,
             Atom.notEnabled
         );
-  
-    },
-
-    // Update DOM on a Received Event
-    receivedEvent: function(id) {
-        
     }
+
 };
 
 
@@ -63,34 +51,14 @@ var app = {
 
 Atom.connectAtom = function() {
     toasted.show('Connecting...');
-    //macAddress= "00:18:E4:00:63:FB";
-    Atom.listBluetooth();
-        //bluetoothSerial.connect(macAddress,Atom.onConnect,Atom.connectError);
-}
-
-Atom.listBluetooth = function() {
-  /*var loader = document.createElement('div');
-  loader.setAttribute('class', "loader");
-  loader.appendChild(document.createTextNode('Searching..'))*/
-  var parent = document.querySelector(".collection")
-  bluetoothSerial.discoverUnpaired(function(devices) {
-    //loader.parentNode.removeChild(loader);
-    devices.forEach(function(device) {
-        var listItem = document.createElement('a');
-        listItem.setAttribute('href', "#!");
-        listItem.setAttribute('class', "collection-item");
-        var createText = document.createTextNode(device.name);
-        listItem.appendChild(createText);
-        parent.appendChild(listItem);
-    })
-  }, Atom.connectError);
+    macAddress= "00:18:E4:00:63:FB";
+    
+    
+    //bluetoothSerial.connect(macAddress,Atom.onConnect,Atom.connectError);
 }
 
 Atom.onConnect = function(){
-    var elem = document.getElementById("button_connect");
-    removeClass(elem, "connect-button-not-connected");
-    removeClass(elem, "pulse");
-    addClass(elem, "connect-button-connected");
+    toasted.show('Connected WOHO!');
 
 }
 
@@ -98,18 +66,21 @@ Atom.connectError = function(){
     toasted.show('Not Connected :(');
 }
 Atom.notEnabled = function() {
-            alert("Please Enable Bluetooth to connect to Atom!")
+            alert("Bluetooth is not enabled.")
         }
 
 Atom.connectBoard = function() {
     
 }
-
 Atom.init = function() 
-{  
-
+{ 
   attachFastClick = Origami.fastclick;
   attachFastClick(document.body);
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var elems = document.querySelectorAll('.sidenav');
+    var instances = M.Sidenav.init(elems, {edge:'right'});
+  });
   var toolbox = document.getElementById('toolbox-categories');
   workspacePlayground = Blockly.inject('blocks_panel',
   {
@@ -131,16 +102,9 @@ Atom.init = function()
 
   });
 
-
-    toasted = new Toasted({
-    position : 'bottom-left',
-    theme : 'alive',
-    duration: 1000,
-});
-        
-   
-
     Atom.bindFunctions();
+
+    
 }
 
 Atom.exportCode = function() {
@@ -153,8 +117,6 @@ Atom.exportCode = function() {
 Atom.bindFunctions = function() {
      Atom.bindClick_('button_ide_large', function() {
         Atom.exportCode();});
-    // Atom.bindClick_('button_connect', function() {
-    //     Atom.connectAtom();});
 }
 
 
@@ -238,13 +200,4 @@ function runCode() {
     }, 1);
     return;
   }
-}
-
-function removeClass(elem, cls) {
-    var str = " " + elem.className + " ";
-    elem.className = str.replace(" " + cls + " ", " ").replace(/^\s+|\s+$/g, "");
-}
-
-function addClass(elem, cls) {
-    elem.className += (" " + cls);
 }

@@ -1,27 +1,29 @@
+
 <html>
     <head>
         <meta charset="utf-8"/>
         <meta name="msapplication-tap-highlight" content="no">
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height">
-        <script type="text/javascript" src="cordova.js"></script>
-        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-        <script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
-        <script type="text/javascript" src="js/materialize.js"></script>
-        <script type="text/javascript" src="js/index.js"></script>  
-
 
         <script type="text/javascript" src="js/blockly/blockly_compressed.js"></script>
         <script type="text/javascript" src="js/blockly/blocks_compressed.js"></script>
         <script type="text/javascript" src="js/blockly/javascript_compressed.js"></script>
         <script src="js/blockly/msg/messages.js"></script>
+          
         <link rel="stylesheet" href="css/materialize.css" media="screen,projection">
-        <link rel="stylesheet" href="css/all.min.css" media="screen,projection">   
-        <link rel="stylesheet" href ="css/toasted.min.css" media="screen,projection">
-        <link rel="stylesheet" href ="css/style.css" media="screen,projection">
+        <script src="js/slideout.min.js"></script>
+
+        <link rel="stylesheet" href="css/all.min.css" media="screen,projection">
+
+        
+        <link rel="stylesheet" href="css/toasted.min.css" media="screen,projection">
+        <link rel="stylesheet" href="css/style.css" media="screen,projection">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
+        <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script type="text/javascript" src="js/materialize.js"></script>
         <script src="js/toasted.min.js"></script>
-
+        <script type="text/javascript" src="js/index-test.js"></script>
+        <script type="text/javascript" src="cordova.js"></script>
         <script src="js/firmata-atom.js"></script>
         <!--script src="js/blockly/toolbox_standard.js"></script-->
         <script src="js/acorn.js"></script>
@@ -30,45 +32,36 @@
 
 
 
-
 </head>
     <body>
 
-            <div class="container">
+        <div class="app">   
+        <ul id="slide-out" class="sidenav">
+            </ul>  
+           <div class="container">
               <div class="row">
-                                  
+                
+               
                   <div class="col s12 m12" style="position:relative">
-                      <ul id="slide-out" class="sidenav">
-                             <li><div class="spinner-layer spinner-red">
-                              <div class="circle-clipper left">
-                                <div class="circle"></div>
-                              </div><div class="gap-patch">
-                                <div class="circle"></div>
-                              </div><div class="circle-clipper right">
-                                <div class="circle"></div>
-                              </div>
-                            </div></li>
-                            <li><div class="collection">
-                            </div></li>
-                      </ul>
                       <div id="ide_buttons_wrapper">
                           <a id="button_ide_large" class="btn-floating btn-large waves-light run-button"><i class="material-icons">play_circle_outline</i></a>
                        </div>
                        <div id="connect_buttons_wrapper">
-                          <a id="button_connect" data-target="slide-out" class="sidenav-trigger btn-floating btn-large connect-button-not-connected waves-light pulse"><i class="material-icons">bluetooth_audio</i></a>
+                          <a id="button_connect" data-target="slide-out" class="btn-floating btn-large connect-button-not-connected waves-light pulse sidenav-trigger"><i class="material-icons">bluetooth_audio</i></a>
                         
                        </div>
 
                        <div class="blocklyDiv white" style="padding: 0">
                           <div id="blocks_panel" class="content blocks_panel_large">
-                              <div id="content_blocks" class="content"></div>
+                              <div id="content_blocks" class="content z-depth-1"></div>
                           </div>
                       </div>
               
 
               </div> 
             </div>  
-  
+        </div>
+      </div>
     </body>
   <xml id="toolbox-categories" style="display: none">
     <category name="Logic" colour="210" iconclass="blocklyTreeIconCustom loops">

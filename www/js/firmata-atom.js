@@ -131,6 +131,10 @@ class firmataBoard{
    * @param {number} value The data to write to the pin between 0 and this.RESOLUTION.PWM.
    */
 
+  reset() {
+    bluetoothSerial.write([SYSTEM_RESET]);
+  }
+
   pwmWrite(pin, value) {
     const data = [];
 
@@ -195,6 +199,14 @@ function initApi(interpreter, scope) {
       setTimeout(callback, timeInSeconds * 1000);
     });
   interpreter.setProperty(scope, 'waitForSeconds', wrapper);
+
+  Blockly.JavaScript.addReservedWords('reset');
+  var wrapper = interpreter.createAsyncFunction(
+    function() {
+      // Delay the call to the callback.
+      fBoard.reset();
+    });
+  interpreter.setProperty(scope, 'reset', wrapper);
 
      // Add an API function for highlighting blocks.
   wrapper = function(id) {

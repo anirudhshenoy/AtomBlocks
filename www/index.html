@@ -19,9 +19,7 @@
         <link rel="stylesheet" href ="css/toasted.min.css" media="screen,projection">
         <link rel="stylesheet" href ="css/style.css" media="screen,projection">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
         <script src="js/toasted.min.js"></script>
-
         <script src="js/firmata-atom.js"></script>
         <!--script src="js/blockly/toolbox_standard.js"></script-->
         <script src="js/acorn.js"></script>
@@ -38,19 +36,9 @@
               <div class="row">
                                   
                   <div class="col s12 m12" style="position:relative">
-                      <ul id="slide-out" class="sidenav">
-                             <li><div class="spinner-layer spinner-red">
-                              <div class="circle-clipper left">
-                                <div class="circle"></div>
-                              </div><div class="gap-patch">
-                                <div class="circle"></div>
-                              </div><div class="circle-clipper right">
-                                <div class="circle"></div>
-                              </div>
-                            </div></li>
-                            <li><div class="collection">
-                            </div></li>
-                      </ul>
+                      <div id="slide-out" class="sidenav collection">
+                          <div class="lds-ripple"><div></div><div></div></div>
+                      </div>
                       <div id="ide_buttons_wrapper">
                           <a id="button_ide_large" class="btn-floating btn-large waves-light run-button"><i class="material-icons">play_circle_outline</i></a>
                        </div>

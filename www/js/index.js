@@ -18,7 +18,6 @@
  */
 
 var Atom = Atom || {};
-var toasted;
 var myInterpreter=null;
 var latestCode='';
 var runner;
@@ -31,10 +30,6 @@ var app = {
     // Application Constructor
     initialize: function() {
         document.addEventListener('deviceready', this.onDeviceReady.bind(this), false); 
-        document.addEventListener('DOMContentLoaded', function() {
-        var elems = document.querySelectorAll('.sidenav');
-        var instances = M.Sidenav.init(elems, {edge:'right',onOpenEnd:Atom.connectAtom});
-        });
     },
 
     // deviceready Event Handler
@@ -62,29 +57,32 @@ var app = {
 
 
 Atom.connectAtom = function() {
-    toasted.show('Connecting...');
+    M.toast({html:'Connecting...', displayLength: 1000});
     //macAddress= "00:18:E4:00:63:FB";
-    Atom.listBluetooth();
-        //bluetoothSerial.connect(macAddress,Atom.onConnect,Atom.connectError);
+    bluetoothSerial.list(Atom.connectBluetooth, Atom.connectError);
+ 
 }
 
-Atom.listBluetooth = function() {
-  /*var loader = document.createElement('div');
-  loader.setAttribute('class', "loader");
-  loader.appendChild(document.createTextNode('Searching..'))*/
-  var parent = document.querySelector(".collection")
-  bluetoothSerial.discoverUnpaired(function(devices) {
-    //loader.parentNode.removeChild(loader);
-    devices.forEach(function(device) {
-        var listItem = document.createElement('a');
-        listItem.setAttribute('href', "#!");
-        listItem.setAttribute('class', "collection-item");
-        var createText = document.createTextNode(device.name);
-        listItem.appendChild(createText);
-        parent.appendChild(listItem);
-    })
-  }, Atom.connectError);
+Atom.connectBluetooth = function(devices){
+  var deviceId=null;
+  var foundFlag=false;
+  devices.forEach(function(device){
+        if (device.name=="ATOM"){
+          deviceId=device.address;
+          foundFlag=true;
+        }
+    });
+  if (foundFlag){
+  //M.toast({html:deviceId, displayLength: 1000});
+  bluetoothSerial.connect(deviceId,Atom.onConnect,Atom.connectError);
+
+  }
+  else{
+    alert('Atom was not found. Please make sure ATOM is paired in Bluetooth settings! ');
+  }
 }
+
+
 
 Atom.onConnect = function(){
     var elem = document.getElementById("button_connect");
@@ -95,7 +93,7 @@ Atom.onConnect = function(){
 }
 
 Atom.connectError = function(){
-    toasted.show('Not Connected :(');
+    M.toast({html:'Not Connnected', displayLength: 1000});
 }
 Atom.notEnabled = function() {
             alert("Please Enable Bluetooth to connect to Atom!")
@@ -132,29 +130,25 @@ Atom.init = function()
   });
 
 
-    toasted = new Toasted({
-    position : 'bottom-left',
-    theme : 'alive',
-    duration: 1000,
-});
-        
-   
+ 
 
     Atom.bindFunctions();
 }
 
 Atom.exportCode = function() {
-
-    runCode();
-    
-
+    if (myInterpreter){
+      resetInterpreter();
+    }
+    else {
+      runCode();  
+    }
 }
 
 Atom.bindFunctions = function() {
      Atom.bindClick_('button_ide_large', function() {
         Atom.exportCode();});
-    // Atom.bindClick_('button_connect', function() {
-    //     Atom.connectAtom();});
+    Atom.bindClick_('button_connect', function() {
+       Atom.connectAtom();});
 }
 
 
@@ -188,7 +182,7 @@ function generateCodeAndLoadIntoInterpreter() {
   Blockly.JavaScript.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
   Blockly.JavaScript.addReservedWords('highlightBlock');
   latestCode = Blockly.JavaScript.workspaceToCode(workspacePlayground);
-  //toasted.show(latestCode);
+  //M.toast({html:code});
   resetStepUi(true);
 }
 
@@ -199,18 +193,21 @@ function resetInterpreter() {
     clearTimeout(runner);
     runner = null;
     }
+    var elem = document.getElementById("button_ide_large");
+    removeClass(elem, "pulse");
 }
 
 
 function runCode() {
   resetInterpreter();
   generateCodeAndLoadIntoInterpreter();
+  var elem = document.getElementById("button_ide_large");
+  addClass(elem, "pulse");
   fBoard= new firmataBoard();
   if (!myInterpreter) {
     // First statement of this code.
     // Clear the program output.
     resetStepUi(true);
-    //runButton.disabled = 'disabled';
 
     // And then show generated code in an alert.
     // In a timeout to allow the outputArea.value to reset first.
@@ -230,7 +227,7 @@ function runCode() {
             // Program is complete.
             
             resetInterpreter();
-            //resetStepUi(false);
+            resetStepUi(false);
           }
         }
       };
@@ -247,4 +244,8 @@ function removeClass(elem, cls) {
 
 function addClass(elem, cls) {
     elem.className += (" " + cls);
+}
+
+function openNav() {
+ document.getElementById("mySidenav").style.width = "250px";
 }

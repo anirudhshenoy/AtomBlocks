@@ -193,17 +193,31 @@ function resetInterpreter() {
     clearTimeout(runner);
     runner = null;
     }
-    var elem = document.getElementById("button_ide_large");
-    removeClass(elem, "pulse");
+    togglePlayButton(0);
 }
 
+function togglePlayButton(toggle){
+  if(toggle===1){
+
+    document.getElementById('button_ide_large').classList.add('pulse');
+    document.getElementById('play-icon').classList.remove('fa-play');
+    document.getElementById('play-icon').classList.add('fa-stop');
+
+  }
+  else{
+    
+    document.getElementById('button_ide_large').classList.remove('pulse');
+    document.getElementById('play-icon').classList.remove('fa-stop');
+    document.getElementById('play-icon').classList.add('fa-play');
+  }
+}
 
 function runCode() {
   resetInterpreter();
+  togglePlayButton(1);
   generateCodeAndLoadIntoInterpreter();
-  var elem = document.getElementById("button_ide_large");
-  addClass(elem, "pulse");
   fBoard= new firmataBoard();
+  fBoard.reset();
   if (!myInterpreter) {
     // First statement of this code.
     // Clear the program output.
@@ -244,8 +258,4 @@ function removeClass(elem, cls) {
 
 function addClass(elem, cls) {
     elem.className += (" " + cls);
-}
-
-function openNav() {
- document.getElementById("mySidenav").style.width = "250px";
 }

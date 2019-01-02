@@ -59,7 +59,10 @@
         }
     }
 }
-
+.fa-2x{
+  float:center;
+  margin-top:13px;
+}
 
 html{
    height: 100%;

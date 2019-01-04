@@ -5,6 +5,7 @@
  */
 
 const ANALOG_MAPPING_QUERY = 0x69;
+const ANALOG_READ_ONCE = 0x01;
 const ANALOG_MAPPING_RESPONSE = 0x6A;
 const ANALOG_MESSAGE = 0xE0;
 const CAPABILITY_QUERY = 0x6B;
@@ -61,17 +62,11 @@ var lastCommand= [];
 const MIDI_RESPONSE = {};
 
 
-MIDI_RESPONSE[REPORT_VERSION] = function(board) {
-  board.version.major = board.buffer[1];
-  board.version.minor = board.buffer[2];
-  return (board.version.major);
-}
 
 
 function firmataBoard (){
 
 	this.ports = new Array(16).fill(0);
-  this.buffer = [];
   this.version={};
   this.MODES = {
       INPUT: 0x00,
@@ -98,120 +93,45 @@ firmataBoard.prototype.receivedData = function(data){
     c.set(receiveBuffer);
     c.set(bytes, receiveBuffer.length);
     receiveBuffer=c;
-    console.log('received' + receiveBuffer);
     if(c[0]===START_SYSEX && c[c.length-1]===END_SYSEX){
       lastCommand.push(receiveBuffer);
       receiveBuffer=new Uint8Array([]);
+      console.log(lastCommand);
     }
     else if (c[0]!==START_SYSEX){
       if(c.length>=3){
         lastCommand.push(c.subarray(0,3));
         receiveBuffer=new Uint8Array([]);
+        console.log(lastCommand);
       }
     }
   }
 
 firmataBoard.prototype.decodeMessage = function(){
-    var data=lastCommand[0];
-    console.log("inside decodeMessage with" + data);
-    var byte, currByte, response, first, last, handler;
-    for (var i = 0; i < data.length; i++) {
-      byte = data[i];
-      // we dont want to push 0 as the first byte on our buffer
-      if (this.buffer.length === 0 && byte === 0) {
-        continue;
-      } else {
-        this.buffer.push(byte);
-
-        first = this.buffer[0];
-        last = this.buffer[this.buffer.length - 1];
-
-        // [START_SYSEX, ... END_SYSEX]
-        if (first === START_SYSEX && last === END_SYSEX) {
-
-          handler = SYSEX_RESPONSE[this.buffer[1]];
-
-          // Ensure a valid SYSEX_RESPONSE handler exists
-          // Only process these AFTER the REPORT_VERSION
-          // message has been received and processed.
-          if (handler) {
-            lastCommand=[];
-            return(handler(this));
-          }
-
-          // It is possible for the board to have
-          // existing activity from a previous run
-          // that will leave any of the following
-          // active:
-          //
-          //    - ANALOG_MESSAGE
-          //    - SERIAL_READ
-          //    - I2C_REQUEST, CONTINUOUS_READ
-          //
-          // This means that we will receive these
-          // messages on transport "open", before any
-          // handshake can occur. We MUST assert
-          // that we will only process this buffer
-          // AFTER the REPORT_VERSION message has
-          // been received. Not doing so will result
-          // in the appearance of the program "hanging".
-          //
-          // Since we cannot do anything with this data
-          // until _after_ REPORT_VERSION, discard it.
-          //
-          lastCommand=[];
-          this.buffer.length = 0;
-
-        } else {
-          /* istanbul ignore else */
-          if (first !== START_SYSEX) {
-            // Check if data gets out of sync: first byte in buffer
-            // must be a valid response if not START_SYSEX
-            // Identify response on first byte
-            response = first < START_SYSEX ? (first & START_SYSEX) : first;
-            // Check if the first byte is possibly
-            // a valid MIDI_RESPONSE (handler)
-            /* istanbul ignore else */
-            if (response !== REPORT_VERSION &&
-                response !== ANALOG_MESSAGE &&
-                response !== DIGITAL_MESSAGE) {
-              // If not valid, then we received garbage and can discard
-              // whatever bytes have been been queued.
-              lastCommand=[];
-              this.buffer.length = 0;
-            }
-          }
-        }
-
-        // There are 3 bytes in the buffer and the first is not START_SYSEX:
-        // Might have a MIDI Command
-        if (this.buffer.length === 3 && first !== START_SYSEX) {
-          // response bytes under 0xF0 we have a multi byte operation
-          response = first < START_SYSEX ? (first & START_SYSEX) : first;
-
-          /* istanbul ignore else */
-          if (MIDI_RESPONSE[response]) {
-            // It's ok that this.versionReceived will be set to
-            // true every time a valid MIDI_RESPONSE is received.
-            // This condition is necessary to ensure that REPORT_VERSION
-            // is called first.
-            if (first === REPORT_VERSION) {
-              lastCommand=[];
-              console.log(this.buffer);
-              return(MIDI_RESPONSE[response](this));
-            }
-            lastCommand=[];
-            this.buffer.length = 0;
-          } else {
-            // A bad serial read must have happened.
-            // Reseting the buffer will allow recovery.
-            lastCommand=[];
-            this.buffer.length = 0;
-          }
-        }
-      }
+    if (lastCommand.length===0){
+      return false;
     }
+    var data=lastCommand[0];
     lastCommand=[];
+    if (data.length === 3 && data[0] === REPORT_VERSION) {
+      this.version.major = data[1];
+      this.version.minor = data[2];
+      return (this.version.major);
+    }
+    return false;
+  }
+
+firmataBoard.prototype.decodeAnalog = function(){
+    if (lastCommand.length===0){
+      return false;
+    }
+    var data=lastCommand[0];
+    lastCommand=[];
+
+    if (data.length === 5 && data[0] === START_SYSEX && data[data.length-1] ===END_SYSEX) {
+      return ((data[3] << 8) + data[2]);
+    }
+    return false;
   }
   /**
    * Asks the arduino to write a value to a digital pin
@@ -226,9 +146,12 @@ firmataBoard.prototype.digitalWrite = function (pin, value) {
     }
 
 function queryFirmware (board){
-    console.log('sent request');
     bluetoothSerial.write([REPORT_VERSION]);
   }
+
+function queryAnalogPin (pin){
+  bluetoothSerial.write([START_SYSEX, ANALOG_READ_ONCE, 0x10 ,END_SYSEX]);
+}
 
 function updateDigitalPort(board, pin, value) {
       const port = pin >> 3;
@@ -250,7 +173,6 @@ function updateDigitalPort(board, pin, value) {
 
 function  writeDigitalPort(board, port) {
       var data = [(DIGITAL_MESSAGE | port), (board.ports[port] & 0x7F), ((board.ports[port] >> 7) & 0x7F)];
-      console.log(data);
       bluetoothSerial.write(data);
 	}
 
@@ -328,12 +250,31 @@ function initApi(interpreter, scope) {
   Blockly.JavaScript.addReservedWords('analogRead');
   var wrapper = interpreter.createAsyncFunction(
     function (pin, callback) {
-    queryFirmware();
+    queryAnalogPin(0x10);
     let promise = new Promise((resolve, reject) => {
-      setTimeout(()=> {resolve(fBoard.decodeMessage())},100);
+      setTimeout(() => {
+        var res = fBoard.decodeAnalog();
+        console.log(res);
+        if (res!==false)resolve(res); 
+        else reject();
+      }, 200);
+    }).then(function(result){
+      M.toast({html:result, displayLength: 250});
+      callback();
+    }).catch(function(err){
+      queryAnalogPin(0x10);
+      let promise = new Promise((resolve, reject) => {
+      setTimeout(() => {
+        var res = fBoard.decodeAnalog();
+        if (res!==false)resolve(res); 
+        else reject();
+      }, 200);
     }).then(function(result){
       console.log(result);
       callback();
+    }).catch(function(err){
+      alert("cannot connect to ATOM");
+    });
     });
   });
   interpreter.setProperty(scope, 'analogRead', wrapper);
@@ -378,6 +319,34 @@ function initApi(interpreter, scope) {
   };      
   interpreter.setProperty(scope, 'highlightBlock',
           interpreter.createNativeFunction(wrapper));
+}
+
+function checkVersion(){
+  queryFirmware();
+  let promise = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      var res = fBoard.decodeMessage();
+      if (res!==false)resolve(res); 
+      else reject();
+    }, 150);
+  }).then(function(result){
+    readyToRun=true;
+  }).catch(function(err){
+    queryFirmware();
+    let promise = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      var res = fBoard.decodeMessage();
+      if (res!==false)resolve(res); 
+      else reject();
+    }, 250);
+  }).then(function(result){
+    readyToRun=true;
+  }).catch(function(err){
+    alert("Board not ready try again");
+    readyToRun=false;
+    resetInterpreter();
+  });
+  });
 }
   
 

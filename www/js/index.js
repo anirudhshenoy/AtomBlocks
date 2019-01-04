@@ -25,6 +25,7 @@ var highlightPause = false;
 var workspacePlayground=null;
 var fboard;
 var attachFastClick;
+var readyToRun=false;
 
 var app = {
     // Application Constructor
@@ -181,13 +182,13 @@ function generateCodeAndLoadIntoInterpreter() {
   Blockly.JavaScript.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
   Blockly.JavaScript.addReservedWords('highlightBlock');
   latestCode = Blockly.JavaScript.workspaceToCode(workspacePlayground);
-  //M.toast({html:code});
   resetStepUi(true);
 }
 
 
 function resetInterpreter() {
     myInterpreter = null;
+    readyToRun=false;
     if (runner) {
     clearTimeout(runner);
     runner = null;
@@ -217,7 +218,14 @@ function runCode() {
   generateCodeAndLoadIntoInterpreter();
   fBoard= new firmataBoard();
   fBoard.reset();
-  if (!myInterpreter) {
+  checkVersion();
+  setTimeout(executeCode,500);
+}
+
+function executeCode(){
+  //readyToRun=true;    //ONLY FOR SIMULATE ANDROID
+  if (!myInterpreter && readyToRun === true) {
+    M.toast({html:'Ready to Run!', displayLength: 100});
     // First statement of this code.
     // Clear the program output.
     resetStepUi(true);
@@ -246,8 +254,7 @@ function runCode() {
       };
       runner();
     }, 1);
-    
+
     return;
   }
 }
-

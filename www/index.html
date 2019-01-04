@@ -16,6 +16,8 @@
         <script type="text/javascript" src="js/blockly/blockly_compressed.js"></script>
         <script type="text/javascript" src="js/blockly/blocks_compressed.js"></script>
         <script type="text/javascript" src="js/blockly/javascript_compressed.js"></script>
+        <script type="text/javascript" src="js/blockly/field_matrix.js"></script>
+
         <script src="js/blockly/msg/messages.js"></script>
       
         <script src="js/firmata-atom.js"></script>
@@ -61,6 +63,13 @@
     <category name="Logic" colour="210" iconclass="blocklyTreeIconCustom loops">
       <label text="Logic" web-icon="" web-class="blocklyFlyoutHeading"></label>
       <block type="LED_write"></block>
+      <block type="led_matrix">
+        <value name="Colour">
+          <shadow type="colour_picker">
+            <field name="COLOUR">#ff0000</field>
+          </shadow>
+        </value>
+      </block>
       <block type="analog_read"></block>
       <block type="LED_level">
         <value name="LEVEL">

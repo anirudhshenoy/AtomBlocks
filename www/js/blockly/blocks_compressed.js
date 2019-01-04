@@ -4,7 +4,8 @@
 
 Blockly.Constants={};Blockly.Constants.atom={};Blockly.Blocks.LED_write={init:function(){this.setColour("#4C97FF");this.appendDummyInput().appendField("LED set").appendField(new Blockly.FieldDropdown([["OUT-A","10"],["OUT-B","9"],["OUT-C","6"],["OUT-D","5"],["OUT-E","3"]]),"PIN").appendField("to").appendField(new Blockly.FieldDropdown([["ON","true"],["OFF","false"]]),"STATE");this.setPreviousStatement(!0,null);this.setNextStatement(!0,null);this.setTooltip("")}};
 Blockly.Blocks.LED_level={init:function(){this.setColour("#4C97FF");this.appendDummyInput().appendField("LED set").appendField(new Blockly.FieldDropdown([["OUT-A","10"],["OUT-B","9"],["OUT-C","6"],["OUT-D","5"],["OUT-E","3"]]),"PIN").appendField("level to");this.appendValueInput("LEVEL").setCheck("Number");this.setPreviousStatement(!0,null);this.setNextStatement(!0,null);this.setTooltip("")}};
-Blockly.Blocks.analog_read={init:function(){this.setColour("#4C97FF");this.appendDummyInput().appendField("Analog Read").appendField(new Blockly.FieldDropdown([["OUT-A","10"],["OUT-B","9"],["OUT-C","6"],["OUT-D","5"],["OUT-E","3"]]),"PIN");this.setPreviousStatement(!0,null);this.setNextStatement(!0,null);this.setTooltip("")}};/*
+Blockly.Blocks.analog_read={init:function(){this.setColour("#4C97FF");this.appendDummyInput().appendField("Analog Read").appendField(new Blockly.FieldDropdown([["OUT-A","10"],["OUT-B","9"],["OUT-C","6"],["OUT-D","5"],["OUT-E","3"]]),"PIN");this.setPreviousStatement(!0,null);this.setNextStatement(!0,null);this.setTooltip("")}};
+Blockly.Blocks.led_matrix={init:function(){this.setColour("#4C97FF");this.appendDummyInput().appendField("Show").appendField(new Blockly.FieldMatrix,"matrix");this.appendValueInput("Colour").setCheck("Colour");this.setPreviousStatement(!0,null);this.setNextStatement(!0,null);this.setTooltip("")}};/*
 
  Visual Blocks Editor
 

@@ -18,6 +18,8 @@ const I2C_REPLY = 0x77;
 const I2C_REQUEST = 0x76;
 const I2C_READ_MASK = 0x18;   // 0b00011000
 // const I2C_END_TX_MASK = 0x40; // 0b01000000
+const MATRIX_WRITE = 0x02;   // 0b00011000
+
 const ONEWIRE_CONFIG_REQUEST = 0x41;
 const ONEWIRE_DATA = 0x73;
 const ONEWIRE_DELAY_REQUEST_BIT = 0x10;
@@ -96,13 +98,11 @@ firmataBoard.prototype.receivedData = function(data){
     if(c[0]===START_SYSEX && c[c.length-1]===END_SYSEX){
       lastCommand.push(receiveBuffer);
       receiveBuffer=new Uint8Array([]);
-      console.log(lastCommand);
     }
     else if (c[0]!==START_SYSEX){
       if(c.length>=3){
         lastCommand.push(c.subarray(0,3));
         receiveBuffer=new Uint8Array([]);
-        console.log(lastCommand);
       }
     }
   }
@@ -145,6 +145,55 @@ firmataBoard.prototype.digitalWrite = function (pin, value) {
       writeDigitalPort(this, port);
     }
 
+
+
+firmataBoard.prototype.showMatrixSend = function (value, colourValue) {
+      bluetoothSerial.write([START_SYSEX]);
+      bluetoothSerial.write([MATRIX_WRITE]);
+
+      //MATRIX TRANSFORM. Comment Code when changing matrix layout
+      var data=[];
+      var colour=[];
+      data[0]=parseInt(value[0]);
+      data[1]=parseInt(value[5]);
+      data[2]=parseInt(value[10]);
+      data[3]=parseInt(value[15]);
+      data[4]=parseInt(value[20]);
+      data[5]=parseInt(value[21]);
+      data[6]=parseInt(value[16]);
+      data[7]=parseInt(value[11]);
+      data[8]=parseInt(value[6]);
+      data[9]=parseInt(value[1]);
+      data[10]=parseInt(value[2]);
+      data[11]=parseInt(value[7]);
+      data[12]=parseInt(value[12]);
+      data[13]=parseInt(value[17]);
+      data[14]=parseInt(value[22]);
+      data[15]=parseInt(value[23]);
+      data[16]=parseInt(value[18]);
+      data[17]=parseInt(value[13]);
+      data[18]=parseInt(value[8]);
+      data[19]=parseInt(value[3]);
+      data[20]=parseInt(value[4]);
+      data[21]=parseInt(value[9]);
+      data[22]=parseInt(value[14]);
+      data[23]=parseInt(value[19]);
+      data[24]=parseInt(value[24]);
+
+      colour[0]= parseInt((colourValue[1]+colourValue[2]),16);
+      colour[1]= parseInt((colourValue[3]+colourValue[4]),16);
+      colour[2]= parseInt((colourValue[5]+colourValue[6]),16);
+
+      for (var i =0 ; i< data.length ; i++){
+        bluetoothSerial.write([data[i]]);
+      }
+      bluetoothSerial.write([colour[0],colour[1],colour[2]]);
+
+
+      bluetoothSerial.write([END_SYSEX]);
+    }
+
+
 function queryFirmware (board){
     bluetoothSerial.write([REPORT_VERSION]);
   }
@@ -175,6 +224,7 @@ function  writeDigitalPort(board, port) {
       var data = [(DIGITAL_MESSAGE | port), (board.ports[port] & 0x7F), ((board.ports[port] >> 7) & 0x7F)];
       bluetoothSerial.write(data);
 	}
+
 
 
 
@@ -227,13 +277,6 @@ firmataBoard.prototype.pwmWrite = function(pin, value) {
   }
 
 
-  /*function (pin, value) {
-    queryFirmware();
-    let promise = new Promise((resolve, reject) => {
-      setTimeout(()=> {resolve(fBoard.decodeMessage())},50);
-    }).then(function(result){
-      M.toast({html:result});
-    });}*/
 
 
 
@@ -291,6 +334,15 @@ function initApi(interpreter, scope) {
 
   interpreter.setProperty(scope,'analogWrite', interpreter.createNativeFunction(wrapper));
   
+  //SHOW MATRIX
+  Blockly.JavaScript.addReservedWords('showMatrix');
+  // Add API function for digitalWrite
+  var wrapper = function (value, colourValue, callback) {
+    fBoard.showMatrixSend(value, colourValue);
+    callback();
+  }
+
+  interpreter.setProperty(scope,'showMatrix', interpreter.createAsyncFunction(wrapper));
 
   //DIGITAL WRITE
   Blockly.JavaScript.addReservedWords('digitalWrite');

@@ -113,7 +113,7 @@ Atom.init = function()
   {
     disable: true,
     media: 'js/blockly/media/',
-    scrollbars: false,
+    scrollbars: true,
     trashcan:false,
     toolbox: toolbox,
     toolboxPosition: 'start',
@@ -124,7 +124,7 @@ Atom.init = function()
       },
     zoom:
          {
-          startScale: 0.7
+          startScale: 0.8
           }
 
   });

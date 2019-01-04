@@ -56,13 +56,23 @@ const STRING_DATA = 0x71;
 const SYSTEM_RESET = 0xFF;
 
 const MAX_PIN_COUNT = 128;
+var receiveBuffer= new Uint8Array([]);
+var lastCommand= [];
+const MIDI_RESPONSE = {};
 
 
+MIDI_RESPONSE[REPORT_VERSION] = function(board) {
+  board.version.major = board.buffer[1];
+  board.version.minor = board.buffer[2];
+  return (board.version.major);
+}
 
-class firmataBoard{
 
-	constructor (){
+function firmataBoard (){
+
 	this.ports = new Array(16).fill(0);
+  this.buffer = [];
+  this.version={};
   this.MODES = {
       INPUT: 0x00,
       OUTPUT: 0x01,
@@ -79,9 +89,130 @@ class firmataBoard{
       PING_READ: 0x75,
       UNKOWN: 0x10,
     };
+  bluetoothSerial.subscribeRawData(this.receivedData, function(){console.log('failure')});
+}
 
+firmataBoard.prototype.receivedData = function(data){
+    var bytes = new Uint8Array(data);
+    var c = new Uint8Array(receiveBuffer.length + bytes.length);
+    c.set(receiveBuffer);
+    c.set(bytes, receiveBuffer.length);
+    receiveBuffer=c;
+    console.log('received' + receiveBuffer);
+    if(c[0]===START_SYSEX && c[c.length-1]===END_SYSEX){
+      lastCommand.push(receiveBuffer);
+      receiveBuffer=new Uint8Array([]);
     }
+    else if (c[0]!==START_SYSEX){
+      if(c.length>=3){
+        lastCommand.push(c.subarray(0,3));
+        receiveBuffer=new Uint8Array([]);
+      }
+    }
+  }
 
+firmataBoard.prototype.decodeMessage = function(){
+    var data=lastCommand[0];
+    console.log("inside decodeMessage with" + data);
+    var byte, currByte, response, first, last, handler;
+    for (var i = 0; i < data.length; i++) {
+      byte = data[i];
+      // we dont want to push 0 as the first byte on our buffer
+      if (this.buffer.length === 0 && byte === 0) {
+        continue;
+      } else {
+        this.buffer.push(byte);
+
+        first = this.buffer[0];
+        last = this.buffer[this.buffer.length - 1];
+
+        // [START_SYSEX, ... END_SYSEX]
+        if (first === START_SYSEX && last === END_SYSEX) {
+
+          handler = SYSEX_RESPONSE[this.buffer[1]];
+
+          // Ensure a valid SYSEX_RESPONSE handler exists
+          // Only process these AFTER the REPORT_VERSION
+          // message has been received and processed.
+          if (handler) {
+            lastCommand=[];
+            return(handler(this));
+          }
+
+          // It is possible for the board to have
+          // existing activity from a previous run
+          // that will leave any of the following
+          // active:
+          //
+          //    - ANALOG_MESSAGE
+          //    - SERIAL_READ
+          //    - I2C_REQUEST, CONTINUOUS_READ
+          //
+          // This means that we will receive these
+          // messages on transport "open", before any
+          // handshake can occur. We MUST assert
+          // that we will only process this buffer
+          // AFTER the REPORT_VERSION message has
+          // been received. Not doing so will result
+          // in the appearance of the program "hanging".
+          //
+          // Since we cannot do anything with this data
+          // until _after_ REPORT_VERSION, discard it.
+          //
+          lastCommand=[];
+          this.buffer.length = 0;
+
+        } else {
+          /* istanbul ignore else */
+          if (first !== START_SYSEX) {
+            // Check if data gets out of sync: first byte in buffer
+            // must be a valid response if not START_SYSEX
+            // Identify response on first byte
+            response = first < START_SYSEX ? (first & START_SYSEX) : first;
+            // Check if the first byte is possibly
+            // a valid MIDI_RESPONSE (handler)
+            /* istanbul ignore else */
+            if (response !== REPORT_VERSION &&
+                response !== ANALOG_MESSAGE &&
+                response !== DIGITAL_MESSAGE) {
+              // If not valid, then we received garbage and can discard
+              // whatever bytes have been been queued.
+              lastCommand=[];
+              this.buffer.length = 0;
+            }
+          }
+        }
+
+        // There are 3 bytes in the buffer and the first is not START_SYSEX:
+        // Might have a MIDI Command
+        if (this.buffer.length === 3 && first !== START_SYSEX) {
+          // response bytes under 0xF0 we have a multi byte operation
+          response = first < START_SYSEX ? (first & START_SYSEX) : first;
+
+          /* istanbul ignore else */
+          if (MIDI_RESPONSE[response]) {
+            // It's ok that this.versionReceived will be set to
+            // true every time a valid MIDI_RESPONSE is received.
+            // This condition is necessary to ensure that REPORT_VERSION
+            // is called first.
+            if (first === REPORT_VERSION) {
+              lastCommand=[];
+              console.log(this.buffer);
+              return(MIDI_RESPONSE[response](this));
+            }
+            lastCommand=[];
+            this.buffer.length = 0;
+          } else {
+            // A bad serial read must have happened.
+            // Reseting the buffer will allow recovery.
+            lastCommand=[];
+            this.buffer.length = 0;
+          }
+        }
+      }
+    }
+    lastCommand=[];
+  }
   /**
    * Asks the arduino to write a value to a digital pin
    * @param {number} pin The pin you want to write a value to.
@@ -89,20 +220,25 @@ class firmataBoard{
    * @param {boolean} enqueue When true, the local state is updated but the command is not sent to the Arduino
    */
 
-	digitalWrite(pin, value) {
-      let port = this.updateDigitalPort(pin, value);
-      this.writeDigitalPort(port);
+firmataBoard.prototype.digitalWrite = function (pin, value) {
+      let port = updateDigitalPort(this, pin, value);
+      writeDigitalPort(this, port);
     }
 
-  updateDigitalPort(pin, value) {
+function queryFirmware (board){
+    console.log('sent request');
+    bluetoothSerial.write([REPORT_VERSION]);
+  }
+
+function updateDigitalPort(board, pin, value) {
       const port = pin >> 3;
       const bit = 1 << (pin & 0x07);
 
       if (value) {
-          this.ports[port] |= bit;
+          board.ports[port] |= bit;
       } 
       else {
-          this.ports[port] &= ~bit;
+          board.ports[port] &= ~bit;
       }
       return port;
   }
@@ -112,8 +248,10 @@ class firmataBoard{
    * @param {number} port The port you want to update.
    */
 
-  writeDigitalPort(port) {
-      bluetoothSerial.write([(DIGITAL_MESSAGE | port), (this.ports[port] & 0x7F), ((this.ports[port] >> 7) & 0x7F)]);
+function  writeDigitalPort(board, port) {
+      var data = [(DIGITAL_MESSAGE | port), (board.ports[port] & 0x7F), ((board.ports[port] >> 7) & 0x7F)];
+      console.log(data);
+      bluetoothSerial.write(data);
 	}
 
 
@@ -121,7 +259,7 @@ class firmataBoard{
   /*
     * mode (INPUT/OUTPUT/ANALOG/PWM/SERVO/I2C/ONEWIRE/STEPPER/ENCODER/SERIAL/PULLUP, 0/1/2/3/4/6/7/8/9/10/11)
   */
-  pinMode(pin, mode) {
+firmataBoard.prototype.pinMode = function(pin, mode) {
     bluetoothSerial.write([PIN_MODE, pin, mode]);
   }
 
@@ -131,11 +269,11 @@ class firmataBoard{
    * @param {number} value The data to write to the pin between 0 and this.RESOLUTION.PWM.
    */
 
-  reset() {
+firmataBoard.prototype.reset = function() {
     bluetoothSerial.write([SYSTEM_RESET]);
   }
 
-  pwmWrite(pin, value) {
+firmataBoard.prototype.pwmWrite = function(pin, value) {
     const data = [];
 
     if (pin > 15) {
@@ -167,12 +305,42 @@ class firmataBoard{
   }
 
 
-}
+  /*function (pin, value) {
+    queryFirmware();
+    let promise = new Promise((resolve, reject) => {
+      setTimeout(()=> {resolve(fBoard.decodeMessage())},50);
+    }).then(function(result){
+      M.toast({html:result});
+    });}*/
 
 
 
 function initApi(interpreter, scope) {
+  Blockly.JavaScript.addReservedWords('waitForSeconds');
+  var wrapper = interpreter.createAsyncFunction(
+    function(timeInSeconds, callback) {
+      // Delay the call to the callback.
+      setTimeout(callback, timeInSeconds * 1000);
+    });
+  interpreter.setProperty(scope, 'waitForSeconds', wrapper);
 
+  //ANALOG READ
+  Blockly.JavaScript.addReservedWords('analogRead');
+  var wrapper = interpreter.createAsyncFunction(
+    function (pin, callback) {
+    queryFirmware();
+    let promise = new Promise((resolve, reject) => {
+      setTimeout(()=> {resolve(fBoard.decodeMessage())},100);
+    }).then(function(result){
+      console.log(result);
+      callback();
+    });
+  });
+  interpreter.setProperty(scope, 'analogRead', wrapper);
+  
+
+
+//ANALOG WRITE
   Blockly.JavaScript.addReservedWords('analogWrite');
   // Add API function for digitalWrite
   var wrapper = function (pin, value) {
@@ -182,24 +350,19 @@ function initApi(interpreter, scope) {
 
   interpreter.setProperty(scope,'analogWrite', interpreter.createNativeFunction(wrapper));
   
+
+  //DIGITAL WRITE
   Blockly.JavaScript.addReservedWords('digitalWrite');
   // Add API function for digitalWrite
-  var wrapper = function (pin, value) {
+  var wrapper = function (pin, value, callback) {
     fBoard.pinMode(pin,fBoard.MODES.OUTPUT);
     fBoard.digitalWrite(pin, value);
+    callback();
   }
 
-  interpreter.setProperty(scope,'digitalWrite', interpreter.createNativeFunction(wrapper));
+  interpreter.setProperty(scope,'digitalWrite', interpreter.createAsyncFunction(wrapper));
 
- 
-  Blockly.JavaScript.addReservedWords('waitForSeconds');
-  var wrapper = interpreter.createAsyncFunction(
-    function(timeInSeconds, callback) {
-      // Delay the call to the callback.
-      setTimeout(callback, timeInSeconds * 1000);
-    });
-  interpreter.setProperty(scope, 'waitForSeconds', wrapper);
-
+  //RESET
   Blockly.JavaScript.addReservedWords('reset');
   var wrapper = interpreter.createAsyncFunction(
     function() {

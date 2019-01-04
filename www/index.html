@@ -4,6 +4,11 @@
         <meta name="msapplication-tap-highlight" content="no">
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height">
         <script type="text/javascript" src="cordova.js"></script>
+        <link rel="stylesheet" href="css/materialize.min.css" media="screen,projection">
+        <link rel="stylesheet" href="css/all.min.css" media="screen,projection">   
+        <link rel="stylesheet" href ="css/style.css" media="screen,projection">
+        
+        <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
         <script type="text/javascript" src="js/materialize.min.js"></script>
         <script type="text/javascript" src="js/index.js"></script>  
 
@@ -12,10 +17,7 @@
         <script type="text/javascript" src="js/blockly/blocks_compressed.js"></script>
         <script type="text/javascript" src="js/blockly/javascript_compressed.js"></script>
         <script src="js/blockly/msg/messages.js"></script>
-        <link rel="stylesheet" href="css/materialize.min.css" media="screen,projection">
-        <link rel="stylesheet" href="css/all.min.css" media="screen,projection">   
-        <link rel="stylesheet" href ="css/style.css" media="screen,projection">
-        
+      
         <script src="js/firmata-atom.js"></script>
         <!--script src="js/blockly/toolbox_standard.js"></script-->
         <script src="js/acorn.js"></script>
@@ -59,6 +61,7 @@
     <category name="Logic" colour="210" iconclass="blocklyTreeIconCustom loops">
       <label text="Logic" web-icon="" web-class="blocklyFlyoutHeading"></label>
       <block type="LED_write"></block>
+      <block type="analog_read"></block>
       <block type="LED_level">
         <value name="LEVEL">
           <shadow type="math_number_minmax">

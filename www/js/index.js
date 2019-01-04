@@ -85,10 +85,9 @@ Atom.connectBluetooth = function(devices){
 
 
 Atom.onConnect = function(){
-    var elem = document.getElementById("button_connect");
-    removeClass(elem, "connect-button-not-connected");
-    removeClass(elem, "pulse");
-    addClass(elem, "connect-button-connected");
+    document.getElementById('button_connect').classList.remove('connect-button-not-connected');
+    document.getElementById('button_connect').classList.remove('pulse');
+    document.getElementById('button_connect').classList.add('connect-button-connected');
 
 }
 
@@ -247,15 +246,8 @@ function runCode() {
       };
       runner();
     }, 1);
+    
     return;
   }
 }
 
-function removeClass(elem, cls) {
-    var str = " " + elem.className + " ";
-    elem.className = str.replace(" " + cls + " ", " ").replace(/^\s+|\s+$/g, "");
-}
-
-function addClass(elem, cls) {
-    elem.className += (" " + cls);
-}

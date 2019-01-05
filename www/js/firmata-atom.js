@@ -67,9 +67,9 @@ const MIDI_RESPONSE = {};
 
 
 function firmataBoard (){
-
+  this.shakeFlag = false;
 	this.ports = new Array(16).fill(0);
-  this.version={};
+  this.version = {};
   this.MODES = {
       INPUT: 0x00,
       OUTPUT: 0x01,
@@ -198,6 +198,13 @@ function queryFirmware (board){
     bluetoothSerial.write([REPORT_VERSION]);
   }
 
+function onShake () {
+  // Fired when a shake is detected
+  fBoard.shakeFlag = true;
+  shake.stopWatch();
+};
+
+
 function queryAnalogPin (pin){
   bluetoothSerial.write([START_SYSEX, ANALOG_READ_ONCE, 0x10 ,END_SYSEX]);
 }
@@ -323,6 +330,30 @@ function initApi(interpreter, scope) {
   interpreter.setProperty(scope, 'analogRead', wrapper);
   
 
+//Start Shake
+  Blockly.JavaScript.addReservedWords('startShakeWatch');
+  // Add API function for digitalWrite
+  var wrapper = function () {
+    shake.startWatch(onShake, 40);
+  }
+  interpreter.setProperty(scope,'startShakeWatch', interpreter.createNativeFunction(wrapper));
+
+//Reset Shake
+  Blockly.JavaScript.addReservedWords('resetShakeWatch');
+  // Add API function for digitalWrite
+  var wrapper = function () {
+    fBoard.shakeFlag = false;
+  }
+  interpreter.setProperty(scope,'resetShakeWatch', interpreter.createNativeFunction(wrapper));
+
+//Check for shake 
+  Blockly.JavaScript.addReservedWords('checkForShake');
+  var wrapper = interpreter.createAsyncFunction(
+    function(callback) {
+      // Delay the call to the callback.
+      callback(fBoard.shakeFlag);
+    });
+  interpreter.setProperty(scope, 'checkForShake', wrapper);
 
 //ANALOG WRITE
   Blockly.JavaScript.addReservedWords('analogWrite');

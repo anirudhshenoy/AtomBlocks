@@ -137,11 +137,22 @@ line.blocklyFlyoutLine {
 .blocklyTreeIconCustom.logic::before {
   content: "\f074";
 }
+
+.blocklyTreeIconCustom.output::before {
+  content: "\f085";
+}
+
+.blocklyTreeIconCustom.leds::before {
+  content: "\f00a";
+}
+
+.blocklyTreeIconCustom.sense::before {
+  content: "\f192";
+}
+
+
 .blocklyTreeIconCustom.loops::before {
   content: "\f01e";
-}
-.blocklyTreeIconCustom.math::before {
-  content: "\f1ec";
 }
 .blocklyTreeIconCustom.text::before {
   content: "\f031";

@@ -60,9 +60,7 @@
   
     </body>
   <xml id="toolbox-categories" style="display: none">
-    <category name="Logic" colour="210" iconclass="blocklyTreeIconCustom loops">
-      <label text="Logic" web-icon="" web-class="blocklyFlyoutHeading"></label>
-      <block type="LED_write"></block>
+    <category name="LED Matrix" colour="#CF63CF" iconclass="blocklyTreeIconCustom leds">
       <block type="led_matrix">
         <value name="Colour">
           <shadow type="colour_picker">
@@ -70,7 +68,9 @@
           </shadow>
         </value>
       </block>
-      <block type="analog_read"></block>
+    </category>
+    <category name="Output" colour="#4C97FF" iconclass="blocklyTreeIconCustom output">
+      <block type="LED_write"></block>
       <block type="LED_level">
         <value name="LEVEL">
           <shadow type="math_number_minmax">
@@ -78,6 +78,12 @@
           </shadow>
         </value>
       </block>
+    </category>
+    <category name="Sense" colour="#0FBD8C" iconclass="blocklyTreeIconCustom sense">
+      <block type="waitforshake"></block>
+      <block type="analog_read"></block>
+    </category>
+    <category name="Logic" colour="#FFAB19" iconclass="blocklyTreeIconCustom logic">
       <block type="controls_if">
         <value name="IF0">
           <shadow type="logic_boolean">
@@ -109,9 +115,8 @@
       <block type="logic_null" disabled="true"></block>
       <block type="logic_ternary"></block>
     </category>
-    <category name="Control" colour="#FFAB19" iconclass="blocklyTreeIconCustom logic">
-      <label text="Control" web-icon="" web-class="blocklyFlyoutHeading"></label>
-      <label text="Basic" web-line="1.0"></label>
+    <category name="Control" colour="#FF8C1A" iconclass="blocklyTreeIconCustom loops">
+      
       <block type="controls_repeat_ext">
         <value name="TIMES">
           <shadow type="math_number">
@@ -127,46 +132,7 @@
         </value>
       </block>
       <block type="controls_whileUntil"></block>
-      <label text="Advanced" web-line="1.0"></label>
-      <block type="controls_for">
-        <value name="VAR">
-          <shadow type="variables_get_reporter">
-            <field name="VAR">index</field>
-          </shadow>
-        </value>
-        <value name="FROM">
-          <shadow type="math_arithmetic">
-            <value name="A">
-              <shadow type="math_number">
-                <field name="NUM">1</field>
-              </shadow>
-            </value>
-            <value name="B">
-              <shadow type="math_number">
-                <field name="NUM">1</field>
-              </shadow>
-            </value>
-          </shadow>
-        </value>
-        <value name="TO">
-          <shadow type="math_number">
-            <field name="NUM">10</field>
-          </shadow>
-        </value>
-        <value name="BY">
-          <shadow type="math_number">
-            <field name="NUM">1</field>
-          </shadow>
-        </value>
-      </block>
-      <block type="controls_forEach">
-        <value name="VAR">
-          <shadow type="variables_get_reporter">
-            <field name="VAR">item</field>
-          </shadow>
-        </value>
-      </block>
-      <block type="controls_flow_statements"></block>
+      
     </category>
     <category name="Math" colour="230" iconclass="blocklyTreeIconCustom math">
       <label text="Math" web-icon="" web-class="blocklyFlyoutHeading"></label>
